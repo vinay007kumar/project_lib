@@ -1,5 +1,6 @@
 from snips.models import Snips
-from snips.serializers import SnipsSerializer
+from snips.permissions import IsOwnerOrReadOnly
+from snips.serializers import SnipsSerializer, UserSerializer
 from rest_framework import generics, status
 from rest_framework.response import Response
 
@@ -7,17 +8,44 @@ from django.http import HttpResponse, JsonResponse
 from rest_framework.decorators import api_view
 from rest_framework.parsers import JSONParser
 
+from django.contrib.auth.models import User
+from rest_framework import serializers
+
+from rest_framework import permissions
+
+class UserList(generics.ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+class UserDetail(generics.RetrieveAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
 
 class SnipsList(generics.ListCreateAPIView):
     queryset = Snips.objects.all()
     serializer_class = SnipsSerializer
+    
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
 
 
 class SnipsDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Snips.objects.all()
     serializer_class = SnipsSerializer
+    
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+    # permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
 
+class UserSerializer(serializers.ModelSerializer):
+    snips = serializers.PrimaryKeyRelatedField(many=True, queryset=Snips.objects.all())
+
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'snips']
 
 @api_view(['GET', 'POST'])
 def snips_list(request, format=None):
