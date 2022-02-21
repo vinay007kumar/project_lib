@@ -11,6 +11,7 @@ urlpatterns = [
     # path('snips/', views.snips_list),
     path('snips/', views.snips_list),
     path('snips/<int:pk>', views.snips_detail),
+    
     path('users/', views.UserList.as_view()),
     path('users/<int:pk>/', views.UserDetail.as_view()),
 
