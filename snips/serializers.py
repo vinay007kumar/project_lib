@@ -1,5 +1,4 @@
 from rest_framework import serializers
-# from snips.models import Snips, LANGUAGE_CHOICES, STYLE_CHOICES
 from snips.models import Snips
 from django.contrib.auth.models import User
 
